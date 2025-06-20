@@ -14,18 +14,13 @@ import java.lang.reflect.Type;
 
 public class Main {
     public static void main(String[] args) {
-  
-        Gson parser = new Gson();
-        
-        clearOutput();
+
         ArrayList <Server> listaConnessioni = new ArrayList<>();
-        try {
-            String content = Files.readString(Paths.get("./res/connectios.json"));
-            Type listType = new TypeToken<ArrayList<Server>>(){}.getType();
-            listaConnessioni = parser.fromJson(content, listType);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Gson parser = new Gson();
+        listaConnessioni = updateListFromJson(listaConnessioni, parser);
+        
+
+        clearOutput();
 
             while(true){
                 System.out.println("*** EAM INTEA DATABASE SYNC UTILITY ***");
@@ -39,12 +34,21 @@ public class Main {
                     break;
                 case 2:
                     clearOutput();
+
+                     try {
+                        String content = Files.readString(Paths.get("./res/connectios.json"));
+                        Type listType = new TypeToken<ArrayList<Server>>(){}.getType();
+                        listaConnessioni = parser.fromJson(content, listType);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
                     for(Server server : listaConnessioni){
                         server.printServer();
                     }
                     break;
                 case 3:
-                    deletConnectionsRecord();
+                    deletConnectionsRecord(listaConnessioni);
                     break;
                 case 4:
                     execute(listaConnessioni.get(1), listaConnessioni.get(0));
@@ -69,32 +73,51 @@ public class Main {
             
             ResultSet res1 = src.query("SELECT * FROM EAM2GIS_OGGETTI");
             
-            PreparedStatement ps = trg.getConnection().prepareStatement("INSERT INTO CONTATORI (OBJECTID, COMUNE, VIA_DENOMINAZIONE, DATA_INS, DATA_AGG, POINT_X, POINT_Y) VALUES (?,?,?,?,?,?,?)");
-            int i = 1;
+            PreparedStatement ps = trg.getConnection().prepareStatement("INSERT INTO CONTATORI (COMUNE, VIA_DENOMINAZIONE, DATA_INS, DATA_AGG, D_STATO, POINT_X, POINT_Y) VALUES (?,?,?,?,?,?,?)");
 
             while(res1.next()){
-                ps.setInt(1, 3532+ i);
-                ps.setString(2, res1.getString("E2G_COMUNE"));
-                ps.setString(3, res1.getString("E2G_INDIRIZZO"));
-                ps.setString(4, res1.getString("E2G_DATA_CREAZIONE"));
-                ps.setString(5, res1.getString("E2G_DATA_MODIFICA"));
+                ps.setString(1, res1.getString("E2G_COMUNE"));
+                ps.setString(2, res1.getString("E2G_INDIRIZZO"));
+                ps.setString(3, res1.getString("E2G_DATA_CREAZIONE"));
+                ps.setString(4, res1.getString("E2G_DATA_MODIFICA"));
+                ps.setString(5, res1.getString("E2G_STATUS"));
                 ps.setString(6, res1.getString("E2G_COOX"));
                 ps.setString(7, res1.getString("E2G_COOY"));
-                ps.executeUpdate();
-                System.out.println(res1.getInt("E2G_COMUNE"));
-                i++;
+                ps.executeUpdate(); 
             }
+
+            
+            CloneAgent prova = new CloneAgent(trg, src, "acq_serbatoio");
+            prova.cloneTable();
+
+            trg.close();
+            src.close();
+
         } catch (Exception e) {
             System.err.println(e);
         }
     }   
 
-    static void deletConnectionsRecord() {
+    static ArrayList<Server> updateListFromJson (ArrayList<Server> listaConnessioni, Gson parser) {
+        try {
+            String content = Files.readString(Paths.get("./res/connectios.json"));
+            Type listType = new TypeToken<ArrayList<Server>>(){}.getType();
+            listaConnessioni = parser.fromJson(content, listType); 
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return listaConnessioni;
+    }
+
+    static void deletConnectionsRecord(ArrayList<Server> listaconnessioni) {
         Console console = System.console();
         String response = console.readLine("Si desidera eliminare il record delle connessioni? [y/n]");
         
         while(true){
             if(response.equals("y")){
+                
+                listaconnessioni.clear();
+                
                 String path = "./res/connectios.json";
                 try (FileWriter writer = new FileWriter(path)) {
                     writer.write("[]");
@@ -120,7 +143,5 @@ public class Main {
             System.out.println(e);
         }
     }
-
-  
 }
 
