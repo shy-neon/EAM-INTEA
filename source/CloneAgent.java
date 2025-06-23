@@ -7,7 +7,7 @@ import java.util.ArrayList;
 public class CloneAgent {
 
     ArrayList <String> campi = new ArrayList<>();
-    ArrayList <String> type = new ArrayList<>();
+    ArrayList <String> type = new ArrayList<>(); 
 
     String nomeTabella;
     Serverconnection src;
@@ -31,33 +31,45 @@ public class CloneAgent {
 
     public void cloneTable () throws Exception{
         ResultSet copy = src.query("SELECT * FROM " + nomeTabella);
+       
 
+        String DeleteStatement = "DELETE FROM " + nomeTabella;
+        PreparedStatement ps = trg.getConnection().prepareStatement(DeleteStatement);
+        ps.executeUpdate();
 
         String statement = "INSERT INTO " + nomeTabella +" (";
+        
         for(String campo : campi){
             statement = statement + campo + ", ";
         }
+         
         statement = statement.substring(0, statement.length()-2);
         statement = statement + ") VALUES (";
+       
+        int j = 0;
         for(String campo : campi){
             statement = statement + "?, ";
+
         }
+
         statement = statement.substring(0, statement.length()-2);
         statement = statement + ")";
         System.out.println(statement);
 
-        PreparedStatement ps = trg.getConnection().prepareStatement(statement);
+        ps = trg.getConnection().prepareStatement(statement);
+
 
         while(copy.next()){
             int i = 0;
             int ncampo = 1;
             for(String campo : campi){
-                
-                if(type.get(i).equals("int") || type.get(i).equals("smallint") || type.get(i).equals("varbinary") || type.get(i).equals("numeric")){
+                if(type.get(i).equals("int") || type.get(i).equals("smallint") || type.get(i).equals("numeric") || type.get(i).equals("varbinary")){
                     ps.setInt(ncampo, copy.getInt(campo));
+                } else if (type.get(i).equals("geometry")){
+                    ps.setBytes(ncampo, copy.getBytes(campo));
                 } else {
                     ps.setString(ncampo, copy.getString(campo));
-                }
+                } 
                 i++;
                 ncampo++;
             }

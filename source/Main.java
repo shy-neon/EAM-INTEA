@@ -65,33 +65,41 @@ public class Main {
         System.out.println(); 
     }
 
-    static void execute (Server target, Server source) {
+    static void execute (Server intea, Server acoset) {
          try {
-            Serverconnection trg = new Serverconnection(target); 
-            Serverconnection src = new Serverconnection(source);
+            Serverconnection inte = new Serverconnection(intea); 
+            Serverconnection acos = new Serverconnection(acoset);
            
-            
-            ResultSet res1 = src.query("SELECT * FROM EAM2GIS_OGGETTI");
-            
-            PreparedStatement ps = trg.getConnection().prepareStatement("INSERT INTO CONTATORI (COMUNE, VIA_DENOMINAZIONE, DATA_INS, DATA_AGG, D_STATO, POINT_X, POINT_Y) VALUES (?,?,?,?,?,?,?)");
+            ResultSet res1 = inte.query("SELECT * FROM CONTATORI");
+            int objid = getHigherID(res1) + 1;
 
+            res1 = acos.query("SELECT * FROM EAM2GIS_OGGETTI");
+            PreparedStatement ps = inte.getConnection().prepareStatement ("DELETE FROM CONTATORI");
+            ps.executeUpdate();
+
+            ps = inte.getConnection().prepareStatement("INSERT INTO CONTATORI (OBJECTID, COMUNE, VIA_DENOMINAZIONE, DATA_INS, DATA_AGG, D_STATO, POINT_X, POINT_Y) VALUES (?,?,?,?,?,?,?,?)");
+            
             while(res1.next()){
-                ps.setString(1, res1.getString("E2G_COMUNE"));
-                ps.setString(2, res1.getString("E2G_INDIRIZZO"));
-                ps.setString(3, res1.getString("E2G_DATA_CREAZIONE"));
-                ps.setString(4, res1.getString("E2G_DATA_MODIFICA"));
-                ps.setString(5, res1.getString("E2G_STATUS"));
-                ps.setString(6, res1.getString("E2G_COOX"));
-                ps.setString(7, res1.getString("E2G_COOY"));
+                ps.setInt(1, objid);
+                ps.setString(2, res1.getString("E2G_COMUNE"));
+                ps.setString(3, res1.getString("E2G_INDIRIZZO"));
+                ps.setString(4, res1.getString("E2G_DATA_CREAZIONE"));
+                ps.setString(5, res1.getString("E2G_DATA_MODIFICA"));
+                ps.setString(6, res1.getString("E2G_STATUS"));
+                ps.setString(7, res1.getString("E2G_COOX"));
+                ps.setString(8, res1.getString("E2G_COOY"));
                 ps.executeUpdate(); 
+                objid++;
             }
 
-            
-            CloneAgent prova = new CloneAgent(trg, src, "acq_serbatoio");
-            prova.cloneTable();
+            CloneAgent cloneSERB = new CloneAgent(inte, acos, "acq_serbatoio");
+            cloneSERB.cloneTable();
 
-            trg.close();
-            src.close();
+            CloneAgent cloneCOND = new CloneAgent(inte, acos, "acq_condotta");
+            cloneCOND.cloneTable();
+
+            inte.close();
+            acos.close();
 
         } catch (Exception e) {
             System.err.println(e);
@@ -142,6 +150,20 @@ public class Main {
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    static int getHigherID (ResultSet rs) {
+        int higher = 1;
+        try{
+            while(rs.next()){
+            if(rs.getInt("OBJECTID") >= higher){
+                higher = rs.getInt("OBJECTID");
+            }
+            }
+        } catch (Exception e){
+            System.out.println("errore nel conteggio dell'id piu grande" + higher);
+        }
+        return higher;
     }
 }
 
