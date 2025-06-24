@@ -54,18 +54,18 @@ public class CloneAgent {
 
         statement = statement.substring(0, statement.length()-2);
         statement = statement + ")";
-        System.out.println(statement);
+        //System.out.println(statement);
 
         ps = trg.getConnection().prepareStatement(statement);
 
-
+        int numberDone = 0;
         while(copy.next()){
             int i = 0;
             int ncampo = 1;
             for(String campo : campi){
-                if(type.get(i).equals("int") || type.get(i).equals("smallint") || type.get(i).equals("numeric") || type.get(i).equals("varbinary")){
+                if(type.get(i).equals("int") || type.get(i).equals("smallint") || type.get(i).equals("numeric")){
                     ps.setInt(ncampo, copy.getInt(campo));
-                } else if (type.get(i).equals("geometry")){
+                } else if (type.get(i).equals("geometry") || type.get(i).equals("varbinary")){
                     ps.setBytes(ncampo, copy.getBytes(campo));
                 } else {
                     ps.setString(ncampo, copy.getString(campo));
@@ -74,6 +74,8 @@ public class CloneAgent {
                 ncampo++;
             }
             ps.executeUpdate();
+            numberDone++;
+            System.out.print("\r" + numberDone + " elementi copiati in " + nomeTabella);
         }
              
     }

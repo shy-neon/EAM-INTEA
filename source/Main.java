@@ -18,11 +18,17 @@ public class Main {
         ArrayList <Server> listaConnessioni = new ArrayList<>();
         Gson parser = new Gson();
         listaConnessioni = updateListFromJson(listaConnessioni, parser);
+
+
         
 
         clearOutput();
 
-            while(true){
+            if(args.length != 0){
+                execute(listaConnessioni.get(1), listaConnessioni.get(0));
+            }
+
+            while(true && args.length == 0){
                 System.out.println("*** EAM INTEA DATABASE SYNC UTILITY ***");
                 System.out.println("1] Nuova connessione \n2] List connessioni \n3] Reset List \n4] Execute");
                 Scanner scan = new Scanner(System.in);
@@ -97,6 +103,12 @@ public class Main {
 
             CloneAgent cloneCOND = new CloneAgent(inte, acos, "acq_condotta");
             cloneCOND.cloneTable();
+
+            CloneAgent clonePOZZ = new CloneAgent(inte, acos, "acq_pozzo");
+            clonePOZZ.cloneTable();
+
+            CloneAgent cloneCAM = new CloneAgent(inte, acos, "acq_cameretta");
+            cloneCAM.cloneTable();
 
             inte.close();
             acos.close();
