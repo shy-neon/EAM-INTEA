@@ -25,7 +25,7 @@ public class Serverconnection implements AutoCloseable {
         String url = "jdbc:sqlserver://" + server.host + ";instanceName="+ server.instance + ";databaseName=" + server.dbName +";trustServerCertificate=true";
         this.connect = DriverManager.getConnection(url, server.user, server.password); 
         stmt = connect.createStatement();
-        System.out.println("connessione riuscita a " + server.host + "\\\\" + server.instance + "\n\n");
+        System.out.println("connessione riuscita a " + server.host + "\\\\" + server.instance );
         
     }
 
@@ -80,7 +80,7 @@ public class Serverconnection implements AutoCloseable {
 
     @Override
     public void close() {
-        System.out.println("\nConnessione al database chiusa");
+        System.out.println("Connessione al database chiusa");
     }
 
     public void update (Serverconnection source, Serverconnection terget) throws Exception{

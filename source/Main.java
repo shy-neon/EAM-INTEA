@@ -25,12 +25,12 @@ public class Main {
         clearOutput();
 
             if(args.length != 0){
-                clone(listaConnessioni.get(1), listaConnessioni.get(0));
+                //clone(listaConnessioni.get(1), listaConnessioni.get(0));
             }
 
             while(true && args.length == 0){
                 System.out.println("*** EAM INTEA DATABASE SYNC UTILITY ***");
-                System.out.println("1] Nuova connessione        2] List connessioni \n3] Reset List               4] Copia \n5] Update                   6] Add direction\n7] Direction List");
+                System.out.println("1] Nuova connessione        2] List connessioni \n3] Reset List               4] Copia \n5] Update                   6] Add direction\n7] Direction List           8] Cancella directions");
                 Scanner scan = new Scanner(System.in);
                 int scelta = scan.nextInt();
 
@@ -56,10 +56,20 @@ public class Main {
                     deletConnectionsRecord(listaConnessioni);
                     break;
                 case 4:
-                    clone(listaConnessioni.get(1), listaConnessioni.get(0));
+                    clearOutput();
+                    for(Direction dir: directions){
+                        if(dir.getType() == 0){
+                           clone(dir.getSourceServer(), dir.getTargetServer(), dir.nometabella);
+                        }
+                    }
                     break;
                 case 5:
-                    update(listaConnessioni.get(1), listaConnessioni.get(0));
+                    clearOutput();
+                    for(Direction dir: directions){
+                        if(dir.getType() == 1){
+                           update(dir.getSourceServer(), dir.getTargetServer(), dir.nometabella);
+                        }
+                    }
                     break;
                 case 6:
                     addDirection(listaConnessioni, directions, parser);
@@ -78,6 +88,9 @@ public class Main {
                         dir.printDirection();
                     }
                     break;
+                case 8:
+                    deletDirectionsRecord(directions);
+                    break;
                 default:
                     break;
                 }
@@ -93,7 +106,7 @@ public class Main {
         Gson converter = new Gson();
         String path = "./res/exec.json";
 
-        String type = console.readLine("update(0)/clone(1): ");
+        String type = console.readLine("update(1)/clone(0): ");
         String source = console.readLine("server di source: ");
         String target = console.readLine("server di target: ");
         String tabella = console.readLine("tabella da clonare: ");
@@ -110,15 +123,16 @@ public class Main {
         return direzioni;
     
     }
+    
     static void clearOutput () {
         for (int i = 0; i < 50; i++) 
         System.out.println(); 
     }
 
-    static void clone (Server intea, Server acoset) {
+    static void clone (Server source, Server target, String nometabella) {
          try {
-            Serverconnection inte = new Serverconnection(intea); 
-            Serverconnection acos = new Serverconnection(acoset);
+            Serverconnection inte = new Serverconnection(source); 
+            Serverconnection acos = new Serverconnection(target);
            
             ResultSet res1 = inte.query("SELECT * FROM CONTATORI");
             int objid = 0;
@@ -142,17 +156,8 @@ public class Main {
                 objid++;
             }
 
-            CloneAgent cloneSERB = new CloneAgent(inte, acos, "acq_serbatoio");
+            CloneAgent cloneSERB = new CloneAgent(inte, acos, nometabella);
             cloneSERB.cloneTable();
-
-            CloneAgent cloneCOND = new CloneAgent(inte, acos, "acq_condotta");
-            cloneCOND.cloneTable();
-
-            CloneAgent clonePOZZ = new CloneAgent(inte, acos, "acq_pozzo");
-            clonePOZZ.cloneTable();
-
-            CloneAgent cloneCAM = new CloneAgent(inte, acos, "acq_cameretta");
-            cloneCAM.cloneTable();
 
             inte.close();
             acos.close();
@@ -176,7 +181,7 @@ public class Main {
     static ArrayList<Direction> updateListDirFromJson (ArrayList<Direction> dir, Gson parser) {
         try {
             String content = Files.readString(Paths.get("./res/exec.json"));
-            Type listType = new TypeToken<ArrayList<Server>>(){}.getType();
+            Type listType = new TypeToken<ArrayList<Direction>>(){}.getType();
             dir = parser.fromJson(content, listType); 
         } catch (IOException e) {
             e.printStackTrace();
@@ -209,6 +214,31 @@ public class Main {
         clearOutput();
     }
 
+    static void deletDirectionsRecord(ArrayList<Direction> listaconnessioni) {
+        Console console = System.console();
+        String response = console.readLine("Si desidera eliminare il record delle direttive? [y/n]");
+        
+        while(true){
+            if(response.equals("y")){
+                
+                listaconnessioni.clear();
+                
+                String path = "./res/exec.json";
+                try (FileWriter writer = new FileWriter(path)) {
+                    writer.write("[]");
+                    System.out.println("eliminati con successo in " + path);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                console.readLine("Elementi con successo, any key to continue");
+                break;
+            } else  {
+                break;
+            }    
+        }
+        clearOutput();
+    }
+
     static void addConnection(ArrayList<Server> listaConnessioni) {
         clearOutput();
         try{
@@ -233,10 +263,11 @@ public class Main {
         return higher;
     }
 
-     static void update (Server intea, Server acoset) {
+     static void update (Server source, Server target, String nometabella) {
+        
          try {
-            Serverconnection inte = new Serverconnection(intea); 
-            Serverconnection acos = new Serverconnection(acoset);
+            Serverconnection inte = new Serverconnection(source); 
+            Serverconnection acos = new Serverconnection(target);
            
             ResultSet res1 = inte.query("SELECT * FROM CONTATORI");
             int objid = 0;
@@ -260,17 +291,8 @@ public class Main {
                 objid++;
             }
 
-            CloneAgent cloneSERB = new CloneAgent(inte, acos, "acq_serbatoio");
+            CloneAgent cloneSERB = new CloneAgent(inte, acos, nometabella);
             cloneSERB.updateTable();
-
-            CloneAgent cloneCOND = new CloneAgent(inte, acos, "acq_condotta");
-            cloneCOND.updateTable();
-
-            CloneAgent clonePOZZ = new CloneAgent(inte, acos, "acq_pozzo");
-            clonePOZZ.updateTable();
-
-            CloneAgent cloneCAM = new CloneAgent(inte, acos, "acq_cameretta");
-            cloneCAM.updateTable();
 
             inte.close();
             acos.close();

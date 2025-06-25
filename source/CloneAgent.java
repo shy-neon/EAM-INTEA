@@ -79,7 +79,8 @@ public class CloneAgent {
             numberDone++;
             System.out.print("\r" + numberDone + " elementi copiati in " + nomeTabella);
         }
-             
+
+        System.out.println();
     }
 
     public void updateTable () throws Exception{
