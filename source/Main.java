@@ -158,7 +158,7 @@ public class Main {
             PreparedStatement ps = inte.getConnection().prepareStatement ("DELETE FROM CONTATORI");
             ps.executeUpdate();
 
-            ps = inte.getConnection().prepareStatement("INSERT INTO CONTATORI (OBJECTID, COMUNE, VIA_DENOMINAZIONE, DATA_INS, DATA_AGG, D_STATO, POINT_X, POINT_Y) VALUES (?,?,?,?,?,?,?,?)");
+           ps = inte.getConnection().prepareStatement("INSERT INTO CONTATORI (OBJECTID, COMUNE, VIA_DENOMINAZIONE, DATA_INS, DATA_AGG, D_STATO, POINT_X, POINT_Y, PUF_CODE) VALUES (?,?,?,?,?,?,?,?,?)");
             
             while(res1.next()){
                 ps.setInt(1, objid);
@@ -169,6 +169,7 @@ public class Main {
                 ps.setString(6, res1.getString("E2G_STATUS"));
                 ps.setString(7, res1.getString("E2G_COOX"));
                 ps.setString(8, res1.getString("E2G_COOY"));
+                ps.setString(9, res1.getString("E2G_CODE"));
                 ps.executeUpdate(); 
                 objid++;
             }
@@ -285,31 +286,14 @@ public class Main {
          try {
             Serverconnection inte = new Serverconnection(source); 
             Serverconnection acos = new Serverconnection(target);
-           
-            ResultSet res1 = inte.query("SELECT * FROM CONTATORI");
-            int objid = 0;
 
-            res1 = acos.query("SELECT * FROM EAM2GIS_OGGETTI");
-            PreparedStatement ps = inte.getConnection().prepareStatement ("DELETE FROM CONTATORI");
-            ps.executeUpdate();
-
-            ps = inte.getConnection().prepareStatement("INSERT INTO CONTATORI (OBJECTID, COMUNE, VIA_DENOMINAZIONE, DATA_INS, DATA_AGG, D_STATO, POINT_X, POINT_Y) VALUES (?,?,?,?,?,?,?,?)");
-            
-            while(res1.next()){
-                ps.setInt(1, objid);
-                ps.setString(2, res1.getString("E2G_COMUNE"));
-                ps.setString(3, res1.getString("E2G_INDIRIZZO"));
-                ps.setString(4, res1.getString("E2G_DATA_CREAZIONE"));
-                ps.setString(5, res1.getString("E2G_DATA_MODIFICA"));
-                ps.setString(6, res1.getString("E2G_STATUS"));
-                ps.setString(7, res1.getString("E2G_COOX"));
-                ps.setString(8, res1.getString("E2G_COOY"));
-                ps.executeUpdate(); 
-                objid++;
+            if(nometabella.equals("EAM2GIS_OGGETTI")){
+                CloneAgent clonecont = new CloneAgent(inte, acos, nometabella);
+                clonecont.updateContatori();;
+            } else {
+                 CloneAgent clone = new CloneAgent(inte, acos, nometabella);
+                clone.updateTable();
             }
-
-            CloneAgent cloneSERB = new CloneAgent(inte, acos, nometabella);
-            cloneSERB.updateTable();
 
             inte.close();
             acos.close();
