@@ -22,11 +22,28 @@ public class Main {
         listaConnessioni = updateListFromJson(listaConnessioni, parser);
         directions = updateListDirFromJson(directions, parser);
 
-        clearOutput();
+        
 
             if(args.length != 0){
-                //clone(listaConnessioni.get(1), listaConnessioni.get(0));
+                Console console = System.console();
+                if(args[0].equals("-cp")){
+                    for(Direction dir: directions){
+                        if(dir.getType() == 0){
+                           clone(dir.getSourceServer(), dir.getTargetServer(), dir.nometabella);
+                        }
+                    }
+                    String type = console.readLine("any key to exit");
+               } else if (args[0].equals("-updt")) {
+                    for(Direction dir: directions){
+                        if(dir.getType() == 1){
+                           update(dir.getSourceServer(), dir.getTargetServer(), dir.nometabella);
+                        }
+                    }
+                    String type = console.readLine("any key to exit");
+               }
             }
+
+            clearOutput();
 
             while(true && args.length == 0){
                 System.out.println("*** EAM INTEA DATABASE SYNC UTILITY ***");
