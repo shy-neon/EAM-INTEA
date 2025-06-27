@@ -44,11 +44,11 @@ public class Main {
             }
 
             clearOutput();
-
+            Scanner scan = new Scanner(System.in);
             while(true && args.length == 0){
                 System.out.println("*** EAM INTEA DATABASE SYNC UTILITY ***");
-                System.out.println("1] Nuova connessione        2] List connessioni \n3] Reset List               4] Copia \n5] Update                   6] Add direction\n7] Direction List           8] Cancella directions");
-                Scanner scan = new Scanner(System.in);
+                System.out.println("1] Nuova connessione        2] Elenca connessioni \n3] Resetta List             4] Clona Tabelle\n5] Sync Tabelle             6] Aggiungi evento\n7] Elenca Eventi            8] Cancella directions");
+                
                 int scelta = scan.nextInt();
 
                 switch (scelta) {
@@ -113,6 +113,7 @@ public class Main {
                 }
         
             }
+            scan.close();
         }
 
     static ArrayList<Direction> addDirection (ArrayList<Server> listaConnessioni, ArrayList<Direction> direzioni, Gson parser) {

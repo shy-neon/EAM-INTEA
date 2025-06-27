@@ -189,7 +189,7 @@ public class CloneAgent {
     }
 
     public void updateContatori () throws Exception{
-        Timestamp updateTime = Timestamp.valueOf(LocalDate.now().minusDays(1).atStartOfDay());
+        Timestamp updateTime = Timestamp.valueOf(LocalDate.now().atStartOfDay());
 
         PreparedStatement updated = src.getConnection().prepareStatement("SELECT * FROM  " + nomeTabella + " WHERE E2G_DATA_MODIFICA >= ?");
         updated.setTimestamp(1, updateTime);
@@ -198,7 +198,7 @@ public class CloneAgent {
         PreparedStatement deletedItems = trg.getConnection().prepareStatement("SELECT * FROM  CONTATORI");
         ResultSet ceck = deletedItems.executeQuery();
 
-        
+        int count = 0;
         int cancellati = 0;
         while(ceck.next()){
             int ex = 0;
@@ -216,13 +216,15 @@ public class CloneAgent {
                 delete.executeUpdate();
                 cancellati ++;
             }
+            count++;
+            System.out.print("\rcontrollo eliminazioni: " + count);
         }
 
-        System.out.println(cancellati + " elementi cancellati");
+        System.out.println();
 
         int v = 0;
         while(copy.next()){
-            System.out.print("\r" + copy.getString("E2G_CODE"));
+            System.out.println("\r" + copy.getString("E2G_CODE"));
             try{
                 PreparedStatement delete = trg.getConnection().prepareStatement("DELETE FROM CONTATORI WHERE PUF_CODE = ?");
                 delete.setString(1, copy.getString("E2G_CODE"));
