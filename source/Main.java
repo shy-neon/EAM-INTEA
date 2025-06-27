@@ -44,11 +44,11 @@ public class Main {
             }
 
             clearOutput();
-
+            Scanner scan = new Scanner(System.in);
             while(true && args.length == 0){
                 System.out.println("*** EAM INTEA DATABASE SYNC UTILITY ***");
-                System.out.println("1] Nuova connessione        2] List connessioni \n3] Reset List               4] Copia \n5] Update                   6] Add direction\n7] Direction List           8] Cancella directions");
-                Scanner scan = new Scanner(System.in);
+                System.out.println("1] Nuova connessione        2] Elenca connessioni \n3] Resetta List             4] Clona Tabelle\n5] Sync Tabelle             6] Aggiungi evento\n7] Elenca Eventi            8] Cancella directions");
+                
                 int scelta = scan.nextInt();
 
                 switch (scelta) {
@@ -113,6 +113,7 @@ public class Main {
                 }
         
             }
+            scan.close();
         }
 
     static ArrayList<Direction> addDirection (ArrayList<Server> listaConnessioni, ArrayList<Direction> direzioni, Gson parser) {
@@ -158,7 +159,7 @@ public class Main {
             PreparedStatement ps = inte.getConnection().prepareStatement ("DELETE FROM CONTATORI");
             ps.executeUpdate();
 
-            ps = inte.getConnection().prepareStatement("INSERT INTO CONTATORI (OBJECTID, COMUNE, VIA_DENOMINAZIONE, DATA_INS, DATA_AGG, D_STATO, POINT_X, POINT_Y) VALUES (?,?,?,?,?,?,?,?)");
+           ps = inte.getConnection().prepareStatement("INSERT INTO CONTATORI (OBJECTID, COMUNE, VIA_DENOMINAZIONE, DATA_INS, DATA_AGG, D_STATO, POINT_X, POINT_Y, PUF_CODE) VALUES (?,?,?,?,?,?,?,?,?)");
             
             while(res1.next()){
                 ps.setInt(1, objid);
@@ -169,6 +170,7 @@ public class Main {
                 ps.setString(6, res1.getString("E2G_STATUS"));
                 ps.setString(7, res1.getString("E2G_COOX"));
                 ps.setString(8, res1.getString("E2G_COOY"));
+                ps.setString(9, res1.getString("E2G_CODE"));
                 ps.executeUpdate(); 
                 objid++;
             }
@@ -285,31 +287,14 @@ public class Main {
          try {
             Serverconnection inte = new Serverconnection(source); 
             Serverconnection acos = new Serverconnection(target);
-           
-            ResultSet res1 = inte.query("SELECT * FROM CONTATORI");
-            int objid = 0;
 
-            res1 = acos.query("SELECT * FROM EAM2GIS_OGGETTI");
-            PreparedStatement ps = inte.getConnection().prepareStatement ("DELETE FROM CONTATORI");
-            ps.executeUpdate();
-
-            ps = inte.getConnection().prepareStatement("INSERT INTO CONTATORI (OBJECTID, COMUNE, VIA_DENOMINAZIONE, DATA_INS, DATA_AGG, D_STATO, POINT_X, POINT_Y) VALUES (?,?,?,?,?,?,?,?)");
-            
-            while(res1.next()){
-                ps.setInt(1, objid);
-                ps.setString(2, res1.getString("E2G_COMUNE"));
-                ps.setString(3, res1.getString("E2G_INDIRIZZO"));
-                ps.setString(4, res1.getString("E2G_DATA_CREAZIONE"));
-                ps.setString(5, res1.getString("E2G_DATA_MODIFICA"));
-                ps.setString(6, res1.getString("E2G_STATUS"));
-                ps.setString(7, res1.getString("E2G_COOX"));
-                ps.setString(8, res1.getString("E2G_COOY"));
-                ps.executeUpdate(); 
-                objid++;
+            if(nometabella.equals("EAM2GIS_OGGETTI")){
+                CloneAgent clonecont = new CloneAgent(inte, acos, nometabella);
+                clonecont.updateContatori();;
+            } else {
+                 CloneAgent clone = new CloneAgent(inte, acos, nometabella);
+                clone.updateTable();
             }
-
-            CloneAgent cloneSERB = new CloneAgent(inte, acos, nometabella);
-            cloneSERB.updateTable();
 
             inte.close();
             acos.close();

@@ -86,6 +86,35 @@ public class CloneAgent {
     public void updateTable () throws Exception{
         Timestamp updateTime = Timestamp.valueOf(LocalDate.now().minusDays(1).atStartOfDay());
 
+    
+        PreparedStatement deletedItems = trg.getConnection().prepareStatement("SELECT * FROM " + nomeTabella);
+        ResultSet ceck = deletedItems.executeQuery();
+
+        int count = 0;
+        
+        while(ceck.next()){
+            int ex = 0;
+           
+            PreparedStatement exist = src.getConnection().prepareStatement("SELECT * FROM  " + nomeTabella + " WHERE OBJECTID = ?");
+            exist.setString(1, ceck.getString("OBJECTID"));
+            ResultSet existRes = exist.executeQuery();
+            
+            while(existRes.next()){
+                ex++;
+            }
+           
+            if(ex == 0){
+                PreparedStatement delete = trg.getConnection().prepareStatement("DELETE FROM " + nomeTabella + " WHERE OBJECTID = ?");
+                delete.setString(1, ceck.getString("OBJECTID"));
+                delete.executeUpdate();
+                System.out.println("\relemento cancellato cod id " + ceck.getString("OBJECTID"));
+            }
+            count++;
+            System.out.print("\rcontrollo eliminazioni: "+ count);
+        }
+
+        System.out.println();
+
         PreparedStatement updated = src.getConnection().prepareStatement("SELECT * FROM  " + nomeTabella + " WHERE DATA_AGG >= ?");
         updated.setTimestamp(1, updateTime);
         ResultSet copy = updated.executeQuery();
@@ -104,7 +133,7 @@ public class CloneAgent {
         }
 
         if(v == 0){
-            System.out.println("Everything up to date on " + nomeTabella);
+            System.out.print("Everything up to date on " + nomeTabella);
         }
 
         String statement = "INSERT INTO " + nomeTabella +" (";
@@ -151,8 +180,99 @@ public class CloneAgent {
             numberDone++;
             System.out.print("\r" + numberDone + " elementi copiati in " + nomeTabella);
         }
+        
         } catch (Exception e) {
-           System.out.println(e);
+           
         }
+
+          System.out.println();
+    }
+
+    public void updateContatori () throws Exception{
+        Timestamp updateTime = Timestamp.valueOf(LocalDate.now().atStartOfDay());
+
+        PreparedStatement updated = src.getConnection().prepareStatement("SELECT * FROM  " + nomeTabella + " WHERE E2G_DATA_MODIFICA >= ?");
+        updated.setTimestamp(1, updateTime);
+        ResultSet copy = updated.executeQuery();
+
+        PreparedStatement deletedItems = trg.getConnection().prepareStatement("SELECT * FROM  CONTATORI");
+        ResultSet ceck = deletedItems.executeQuery();
+
+        int count = 0;
+        int cancellati = 0;
+        while(ceck.next()){
+            int ex = 0;
+            PreparedStatement exist = src.getConnection().prepareStatement("SELECT * FROM  " + nomeTabella + " WHERE E2G_CODE = ?");
+            exist.setString(1, ceck.getString("PUF_CODE"));
+            ResultSet existRes = exist.executeQuery();
+            
+            while(existRes.next()){
+                ex++;
+            }
+           
+            if(ex == 0){
+                PreparedStatement delete = trg.getConnection().prepareStatement("DELETE FROM CONTATORI WHERE PUF_CODE = ?");
+                delete.setString(1, ceck.getString("PUF_CODE"));
+                delete.executeUpdate();
+                cancellati ++;
+            }
+            count++;
+            System.out.print("\rcontrollo eliminazioni: " + count);
+        }
+
+        System.out.println();
+
+        int v = 0;
+        while(copy.next()){
+            System.out.println("\r" + copy.getString("E2G_CODE"));
+            try{
+                PreparedStatement delete = trg.getConnection().prepareStatement("DELETE FROM CONTATORI WHERE PUF_CODE = ?");
+                delete.setString(1, copy.getString("E2G_CODE"));
+                delete.executeUpdate();
+           } catch (Exception e) {
+                System.out.println(e);
+           }
+           v++;
+        }
+
+        if(v == 0){
+            System.out.println("Everything up to date on " + nomeTabella);
+        }
+
+        
+        PreparedStatement ps = trg.getConnection().prepareStatement("INSERT INTO CONTATORI (OBJECTID, COMUNE, VIA_DENOMINAZIONE, DATA_INS, DATA_AGG, D_STATO, POINT_X, POINT_Y, PUF_CODE) VALUES (?,?,?,?,?,?,?,?,?)");
+        
+        PreparedStatement idlist = trg.getConnection().prepareStatement("SELECT * FROM  CONTATORI");
+        copy = idlist.executeQuery();
+        int objid = getHigherID(copy) + 1;
+
+        copy = updated.executeQuery();
+        while(copy.next()){
+            ps.setInt(1, objid);
+            ps.setString(2, copy.getString("E2G_COMUNE"));
+            ps.setString(3, copy.getString("E2G_INDIRIZZO"));
+            ps.setString(4, copy.getString("E2G_DATA_CREAZIONE"));
+            ps.setString(5, copy.getString("E2G_DATA_MODIFICA"));
+            ps.setString(6, copy.getString("E2G_STATUS"));
+            ps.setString(7, copy.getString("E2G_COOX"));
+            ps.setString(8, copy.getString("E2G_COOY"));
+            ps.setString(9, copy.getString("E2G_CODE"));
+            ps.executeUpdate(); 
+            objid++;
+        }
+    }
+
+    static int getHigherID (ResultSet rs) {
+        int higher = 1;
+        try{
+            while(rs.next()){
+            if(rs.getInt("OBJECTID") >= higher){
+                higher = rs.getInt("OBJECTID");
+            }
+            }
+        } catch (Exception e){
+            System.out.println(e);
+        }
+        return higher;
     }
 }
