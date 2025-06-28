@@ -1,0 +1,2 @@
+In questa cartella sono contenuti i fil di logging dei processi lanciati.
+Ogni file contiene il log dell'ultima esecuzione della giornata.

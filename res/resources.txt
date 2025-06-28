@@ -1,0 +1,4 @@
+Questa cartella contiene le risorse statiche del programma:
+la lista delle connessioni con i server 
+(le connesisoni finiscono nel json connections solo se il server viene contattato e le credenziali sono corrette)
+la lista delle operazioni di copia, inserite dall'utente
