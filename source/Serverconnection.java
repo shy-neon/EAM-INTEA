@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 import java.io.FileWriter;
 import java.io.IOException;
-
+import java.util.logging.*;
 import com.google.gson.Gson;
 
 
@@ -19,20 +19,23 @@ public class Serverconnection implements AutoCloseable {
 
     private Server server = new Server();
     private Gson converter = new Gson();
-
+    private Logger logger ;
 
     public Serverconnection (Server server) throws Exception {
+        logger = GlobalLogger.getLogger();
         String url = "jdbc:sqlserver://" + server.host + ";instanceName="+ server.instance + ";databaseName=" + server.dbName +";trustServerCertificate=true";
-        this.connect = DriverManager.getConnection(url, server.user, server.password); 
+        try {
+            this.connect = DriverManager.getConnection(url, server.user, server.password); 
+        } catch (Exception e) {
+            logger.severe(e.toString());
+        }
         stmt = connect.createStatement();
         System.out.println("connessione riuscita a " + server.host + "\\\\" + server.instance );
-        
+        logger.fine("connessione riuscita a " + server.host + "\\\\" + server.instance );
     }
 
     public Serverconnection (ArrayList <Server> connessioni) throws Exception{
-
         this.server.nome =  console.readLine("nome: ");
-
         this.server.host =  console.readLine("Host: ");
         this.server.instance =  console.readLine("Istanza: ");
         this.server.dbName =  console.readLine("database: ");
@@ -44,7 +47,12 @@ public class Serverconnection implements AutoCloseable {
         String url = "jdbc:sqlserver://" + server.host + ";instanceName="+ server.instance + ";databaseName=" + server.dbName +";trustServerCertificate=true";
         System.out.println(); 
     
-        connect = DriverManager.getConnection(url, server.user, server.password); 
+        try {
+            connect = DriverManager.getConnection(url, server.user, server.password); 
+        } catch (Exception e) {
+            logger.severe(e.toString());
+        }
+        
         stmt = connect.createStatement();
         System.out.println("connessione riuscita a " + server.host + "\\\\" + server.instance + "\n\n");
 
@@ -81,6 +89,8 @@ public class Serverconnection implements AutoCloseable {
     @Override
     public void close() {
         System.out.println("Connessione al database chiusa");
+        logger.fine("closed connections");
+        
     }
 
     public void update (Serverconnection source, Serverconnection terget) throws Exception{

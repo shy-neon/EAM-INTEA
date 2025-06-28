@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.time.*;
 import java.sql.Timestamp;
+import java.util.logging.*;;
 
 public class CloneAgent {
 
@@ -15,7 +16,10 @@ public class CloneAgent {
     Serverconnection src;
     Serverconnection trg;
 
+    Logger logger = GlobalLogger.getLogger();
+
     public CloneAgent (Serverconnection src, Serverconnection trg, String nomeTabella) throws Exception{
+        
         this.src =src;
         this.trg =trg;
         this.nomeTabella = nomeTabella;
@@ -78,8 +82,9 @@ public class CloneAgent {
             ps.executeUpdate();
             numberDone++;
             System.out.print("\r" + numberDone + " elementi copiati in " + nomeTabella);
+            
         }
-
+        logger.info(numberDone + " elementi copiati in " + nomeTabella);
         System.out.println();
     }
 
@@ -108,11 +113,13 @@ public class CloneAgent {
                 delete.setString(1, ceck.getString("OBJECTID"));
                 delete.executeUpdate();
                 System.out.println("\relemento cancellato cod id " + ceck.getString("OBJECTID"));
+                logger.info("elemento cancellato cod id " + ceck.getString("OBJECTID"));
             }
             count++;
             System.out.print("\rcontrollo eliminazioni: "+ count);
+            
         }
-
+        logger.info("controllo eliminazioni: "+ count);
         System.out.println();
 
         PreparedStatement updated = src.getConnection().prepareStatement("SELECT * FROM  " + nomeTabella + " WHERE DATA_AGG >= ?");
@@ -128,12 +135,14 @@ public class CloneAgent {
                 delete.executeUpdate();
            } catch (Exception e) {
                 System.out.println(e);
+                logger.severe(e.toString());
            }
            v++;
         }
 
         if(v == 0){
             System.out.print("Everything up to date on " + nomeTabella);
+            logger.info("Everything up to date on " + nomeTabella);
         }
 
         String statement = "INSERT INTO " + nomeTabella +" (";
@@ -179,6 +188,7 @@ public class CloneAgent {
             ps1.executeUpdate();
             numberDone++;
             System.out.print("\r" + numberDone + " elementi copiati in " + nomeTabella);
+            logger.info(numberDone + " elementi copiati in " + nomeTabella);
         }
         
         } catch (Exception e) {
@@ -219,12 +229,12 @@ public class CloneAgent {
             count++;
             System.out.print("\rcontrollo eliminazioni: " + count);
         }
-
+        logger.info("controllo eliminazioni: " + count);
         System.out.println();
 
         int v = 0;
         while(copy.next()){
-            System.out.println("\r" + copy.getString("E2G_CODE"));
+            System.out.println("aggiornato: " + copy.getString("E2G_CODE"));
             try{
                 PreparedStatement delete = trg.getConnection().prepareStatement("DELETE FROM CONTATORI WHERE PUF_CODE = ?");
                 delete.setString(1, copy.getString("E2G_CODE"));
@@ -237,6 +247,7 @@ public class CloneAgent {
 
         if(v == 0){
             System.out.println("Everything up to date on " + nomeTabella);
+            logger.info("Everything up to date on " + nomeTabella);
         }
 
         

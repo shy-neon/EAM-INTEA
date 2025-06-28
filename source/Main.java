@@ -17,12 +17,10 @@ public class Main {
 
         ArrayList <Server> listaConnessioni = new ArrayList<>();
         ArrayList <Direction> directions = new ArrayList<>();
-        
+        GlobalLogger.getLogger();
         Gson parser = new Gson();
         listaConnessioni = updateListFromJson(listaConnessioni, parser);
         directions = updateListDirFromJson(directions, parser);
-
-        
 
             if(args.length != 0){
                 Console console = System.console();
@@ -39,18 +37,23 @@ public class Main {
                            update(dir.getSourceServer(), dir.getTargetServer(), dir.nometabella);
                         }
                     }
-                    String type = console.readLine("any key to exit");
                }
+               GlobalLogger.closeLogger();
             }
-
+            boolean exit = true;
             clearOutput();
             Scanner scan = new Scanner(System.in);
-            while(true && args.length == 0){
+            while(exit && args.length == 0){
+                
                 System.out.println("*** EAM INTEA DATABASE SYNC UTILITY ***");
                 System.out.println("1] Nuova connessione        2] Elenca connessioni \n3] Resetta List             4] Clona Tabelle\n5] Sync Tabelle             6] Aggiungi evento\n7] Elenca Eventi            8] Cancella directions");
+                int scelta;
+                try {
+                    scelta = scan.nextInt();
+                } catch (Exception e) {
+                    scelta = 923;
+                }
                 
-                int scelta = scan.nextInt();
-
                 switch (scelta) {
                 case 1:
                     addConnection(listaConnessioni);
@@ -109,11 +112,15 @@ public class Main {
                     deletDirectionsRecord(directions);
                     break;
                 default:
+                    exit = false;
+                    scan.close();
                     break;
                 }
-        
+                
             }
             scan.close();
+            GlobalLogger.closeLogger();
+            
         }
 
     static ArrayList<Direction> addDirection (ArrayList<Server> listaConnessioni, ArrayList<Direction> direzioni, Gson parser) {
