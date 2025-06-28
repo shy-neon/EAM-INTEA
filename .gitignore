@@ -1,2 +1,4 @@
 res/connectios.json
 res/exec.json
+log/*
+!log/logging.txt
