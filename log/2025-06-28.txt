@@ -1,0 +1,24 @@
+giu 28, 2025 12:58:18 PM source.Serverconnection <init>
+FINE: connessione riuscita a localhost\\SQLEXPRESS01
+giu 28, 2025 12:58:18 PM source.Serverconnection <init>
+FINE: connessione riuscita a localhost\\SQLEXPRESS
+giu 28, 2025 12:58:22 PM source.CloneAgent updateTable
+INFO: controllo eliminazioni: 7404
+giu 28, 2025 12:58:22 PM source.CloneAgent updateTable
+INFO: 1 elementi copiati in ACQ_CAMERETTA
+giu 28, 2025 12:58:22 PM source.Serverconnection close
+FINE: closed connections
+giu 28, 2025 12:58:22 PM source.Serverconnection close
+FINE: closed connections
+giu 28, 2025 12:58:22 PM source.Serverconnection <init>
+FINE: connessione riuscita a localhost\\SQLEXPRESS01
+giu 28, 2025 12:58:22 PM source.Serverconnection <init>
+FINE: connessione riuscita a localhost\\SQLEXPRESS
+giu 28, 2025 12:58:22 PM source.CloneAgent updateTable
+INFO: controllo eliminazioni: 14
+giu 28, 2025 12:58:22 PM source.CloneAgent updateTable
+INFO: Everything up to date on ACQ_POZZO
+giu 28, 2025 12:58:22 PM source.Serverconnection close
+FINE: closed connections
+giu 28, 2025 12:58:22 PM source.Serverconnection close
+FINE: closed connections
